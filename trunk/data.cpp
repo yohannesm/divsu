@@ -21,7 +21,7 @@
 
 GLfloat i0_x[MAX_POINT];    // Iteration 0 control points, x
 GLfloat i0_y[MAX_POINT];    // Iteration 0 control points, y
-int num_i0_pts;                 // The number of iteration 0 control points
+int num_i0_pts;             // The number of iteration 0 control points
 
 GLfloat *draw_x;     // Control points to be drawn, x
 GLfloat *draw_y;     // Control points to be drawn, y
