@@ -27,12 +27,12 @@ int X_OFF = 10;	/* window x offset */
 int Y_OFF = 10;	/* window y offset */
 
 /* The dimensions of the viewing frustum */
-GLfloat fleft   = -40.0;
-GLfloat fright  =  40.0;
-GLfloat fbottom = -40.0;
-GLfloat ftop    =  40.0;
-GLfloat zNear   =  40.0;
-GLfloat zFar    = -40.0;
+GLfloat fleft   = -200.0;
+GLfloat fright  =  200.0;
+GLfloat fbottom = -200.0;
+GLfloat ftop    =  200.0;
+GLfloat zNear   =  200.0;
+GLfloat zFar    = -200.0;
 
 /* local function declarations */
 void init(void);
@@ -73,8 +73,15 @@ void display() {
 	 * Note: Only one should be called at a time (based on the
 	 * display mode).
 	 */
+	 
+    glColor3f(1.0, 1.0, 1.0);
+    glBegin(GL_LINES);
+    glVertex2f(0.0, -H);
+    glVertex2f(0.0, H);
+    glEnd();
 
 	drawSurface();
+	draw2D();
 
     glFlush();  /* Flush all executed OpenGL ops finish */
 
@@ -104,8 +111,32 @@ void myMouseButton(int button, int state, int x, int y) {
 	if (state == GLUT_DOWN) {
 		if (button == GLUT_LEFT_BUTTON) {
 			// Add a point, if there is room
-			printf("x: %3d, y: %3d\n", x, y);
+
+		    if (num_draw_pts < MAX_POINT)
+            {
+    			x = x - W / 2;
+    			y = -(y - H / 2);
+    			if (x >= -5 && x <= 5)
+    			    x = 0;
+    			printf("%i: (%3d, %3d)\n", num_draw_pts, x, y);
+                i0_x[num_draw_pts] = x;
+                i0_y[num_draw_pts] = y;
+                ++num_draw_pts;
+            }
+            else
+            {
+                printf("Exceeded the maximum number of control points\n");
+            }
 		}
+	    else if (button == GLUT_RIGHT_BUTTON)
+	    {
+	        if (num_draw_pts > 0)
+	        {
+	            printf("deleted control point %i\n", num_draw_pts - 1); 
+    	        --num_draw_pts;
+            }
+	    }
+	    display();
 	}
 }
 
