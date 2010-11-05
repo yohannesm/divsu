@@ -18,8 +18,9 @@
 #include "common.h"
 #include "drawing.h"
 #include "data.h"
+#include <iostream>
 
-/* GLOBAL VARAIBLES */
+/* GLOBAL VARIABLES */
 /* (storage is actually allocated here) */
 int W=400;		/* window width */
 int H=400;		/* window height */
@@ -80,7 +81,8 @@ void display() {
     glVertex2f(0.0, H);
     glEnd();
 
-	drawSurface();
+	//drawSurface();
+    //draw3D();
 	draw2D();
 
     glFlush();  /* Flush all executed OpenGL ops finish */
@@ -97,12 +99,16 @@ void myKeyHandler(unsigned char ch, int x, int y) {
 		case 'q':
 			endSubdiv(0);
 			break;
+        case 'w':
+            draw3D();
+            break;
 		default:
 			/* Unrecognized keypress */
 		return;
 	}
 
 	glutPostRedisplay();
+    //display();
 
 	return;
 }
@@ -114,6 +120,8 @@ void myMouseButton(int button, int state, int x, int y) {
 
 		    if (num_draw_pts < MAX_POINT)
             {
+                std::cout << "real coordinate";
+    			printf("%i: (%3d, %3d)\n", num_draw_pts, x, y);
     			x = x - W / 2;
     			y = -(y - H / 2);
     			if (x >= -5 && x <= 5)
