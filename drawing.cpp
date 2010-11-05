@@ -4,7 +4,7 @@
  * Contains the drawing routines and related helper functions for the
  * subdivision surface
  *
- * Group Members: <FILL IN>
+ * Group Members: Yohannes Himawan, David Lee 
  */
 
 #ifdef _WIN32
@@ -27,6 +27,45 @@ int subdiv_h; // The user-specified subdivision level, horizontal
 void drawSurface(void) {
 
 }
+
+#if 1
+void draw3D(){
+   if(num_draw_pts <5){
+     //print error message
+   }
+   else{
+   //draw the 3-D extrusion
+   glMatrixMode(GL_MODELVIEW);
+   glBegin(GL_LINES);
+   for(int i=0; i<num_draw_pts; ++i){
+      glVertex3f(i0_x[i], i0_y[i], 0);
+   }
+   glEnd();
+
+   glBegin(GL_LINES);
+   for(int i=0; i<num_draw_pts; ++i){
+      glVertex3f(i0_x[i], i0_y[i], 0);
+   }
+   glPushMatrix();
+      glTranslatef(0, 200, 0);
+      glRotatef(120.0, 0.0, 1.0, 0.0);
+      glPopMatrix();
+   glEnd();
+   
+   glBegin(GL_LINES);
+   for(int i=0; i<num_draw_pts; ++i){
+      glVertex3f(i0_x[i], i0_y[i], 0);
+   }
+   glPushMatrix();
+      glTranslatef(0, 200, 0);
+      glRotatef(-120.0, 0.0, 1.0, 0.0);
+      glPopMatrix();
+   glEnd();
+   
+}
+
+}
+#endif 
 
 void draw2D ()
 {

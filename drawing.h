@@ -9,5 +9,6 @@ extern int subdiv_h; // The user-specified subdivision level, horizontal
 void drawSurface(void);
 
 void draw2D ();
+void draw3D ();
 
 #endif	/* _DRAWING_H_ */
