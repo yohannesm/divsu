@@ -58,9 +58,10 @@ void draw3D(){
    }
    }
    
-/*
    glMatrixMode(GL_MODELVIEW);
    glBegin(GL_LINES);
+   
+/*
    for(int i=0; i<num_draw_pts; ++i){
       glVertex3f(i0_x[i], i0_y[i], 0);
    }
