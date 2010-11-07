@@ -42,6 +42,9 @@ void myKeyHandler(unsigned char ch, int x, int y);
 void myMouseButton(int button, int state, int x, int y);
 void endSubdiv(int status);
 
+
+
+
 int main (int argc, char** argv) {
   glutInit(&argc,argv);
   glutInitWindowSize(W, H);
@@ -81,9 +84,20 @@ void display() {
     glVertex2f(0.0, H);
     glEnd();
 
+    switch(disp){
+     //2D or 3D
+      case DRAW2D:
+        draw2D();
+        break;
+      case DRAW3D:
+        draw3D();
+        break;
+        default:
+        break;
+    }
 	//drawSurface();
     //draw3D();
-	draw2D();
+	//draw2D();
 
     glFlush();  /* Flush all executed OpenGL ops finish */
 
@@ -100,7 +114,10 @@ void myKeyHandler(unsigned char ch, int x, int y) {
 			endSubdiv(0);
 			break;
         case 'w':
-            draw3D();
+          if(disp == DRAW2D)
+            disp = DRAW3D;
+          else
+            disp = DRAW2D;
             break;
 		default:
 			/* Unrecognized keypress */
@@ -118,10 +135,10 @@ void myMouseButton(int button, int state, int x, int y) {
 		if (button == GLUT_LEFT_BUTTON) {
 			// Add a point, if there is room
 
-		    if (num_draw_pts < MAX_POINT)
+		    if (num_draw_pts < MAX_POINT && x >= 200)
             {
-                std::cout << "real coordinate";
-    			printf("%i: (%3d, %3d)\n", num_draw_pts, x, y);
+               // std::cout << "real coordinate";
+    		//	printf("%i: (%3d, %3d)\n", num_draw_pts, x, y);
     			x = x - W / 2;
     			y = -(y - H / 2);
     			if (x >= -5 && x <= 5)
@@ -133,7 +150,7 @@ void myMouseButton(int button, int state, int x, int y) {
             }
             else
             {
-                printf("Exceeded the maximum number of control points\n");
+                printf("Exceeded the maximum number of control points or the point is out of range \n");
             }
 		}
 	    else if (button == GLUT_RIGHT_BUTTON)
