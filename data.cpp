@@ -25,8 +25,10 @@ int num_i0_pts;             // The number of iteration 0 control points
 
 GLfloat *draw_x;     // Control points to be drawn, x
 GLfloat *draw_y;     // Control points to be drawn, y
+GLfloat *draw_z;     // z control points to be drawn
 int num_draw_pts;    // The number of control points to draw
 GLfloat *** poly_list;
+//std::vector<std::vector<std::vector<GLfloat>>> poly_list;
 
 /**********************************************
  * Begin Routines for Midpoint Subdivsion

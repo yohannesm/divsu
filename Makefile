@@ -24,7 +24,7 @@ endif
 # Uncomment the following line if you are using Mesa
 #LIBS = -lglut -lMesaGLU -lMesaGL -lm
 
-subdiv: subdiv.cpp drawing.cpp data.cpp drawing.h data.h
+subdiv: subdiv.cpp drawing.cpp data.cpp mouse.cpp drawing.h data.h mouse.h
 	${CC} ${CFLAGS} ${INCLUDE} -o subdiv ${LIBDIR} ${LIBS} subdiv.cpp drawing.cpp data.cpp
 
 clean:

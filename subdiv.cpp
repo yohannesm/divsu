@@ -19,6 +19,7 @@
 #include "drawing.h"
 #include "data.h"
 #include <iostream>
+#include "mouse.h"
 
 /* GLOBAL VARIABLES */
 /* (storage is actually allocated here) */
@@ -34,6 +35,7 @@ GLfloat fbottom = -200.0;
 GLfloat ftop    =  200.0;
 GLfloat zNear   =  200.0;
 GLfloat zFar    = -200.0;
+GLfloat zoomFactor = 1.0; 
 
 /* local function declarations */
 void init(void);
@@ -55,6 +57,7 @@ int main (int argc, char** argv) {
   glutDisplayFunc(display);
   glutKeyboardFunc(myKeyHandler);
   glutMouseFunc(myMouseButton);
+	glutMotionFunc(myMouseMotion);
   glutMainLoop();
   return 0;
 }
@@ -64,6 +67,28 @@ void init() {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	glOrtho(fleft, fright, fbottom, ftop, -zNear, -zFar);
+}
+
+void resetCamera( void ) {
+	//glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+
+	/*
+	 * glFrustum must receive positive values for the near and far clip planes
+	 * ( arguments 5 and 6 ).
+	 */
+	//glFrustum(fleft, fright, fbottom, ftop, -zNear, -zFar);
+
+	/* Set the drawing point at the center of the frustum */
+	//glMatrixMode( GL_MODELVIEW );
+	//glLoadIdentity( );
+	/* Go to the center of the scene */
+	//glTranslatef(
+		//(fleft + fright) / 2,
+		//(fbottom + ftop) / 2,
+		//(zNear + zFar) / 2);
+
+	//zoomFactor = 1.0;
 }
 
 void display() {
@@ -78,15 +103,16 @@ void display() {
 	 * display mode).
 	 */
 	 
-    glColor3f(1.0, 1.0, 1.0);
-    glBegin(GL_LINES);
-    glVertex2f(0.0, -H);
-    glVertex2f(0.0, H);
-    glEnd();
+
 
     switch(disp){
      //2D or 3D
       case DRAW2D:
+        glColor3f(1.0, 1.0, 1.0);
+        glBegin(GL_LINES);
+        glVertex2f(0.0, -H);
+        glVertex2f(0.0, H);
+        glEnd();
         draw2D();
         break;
       case DRAW3D:
@@ -117,7 +143,10 @@ void myKeyHandler(unsigned char ch, int x, int y) {
           if(disp == DRAW2D)
             disp = DRAW3D;
           else
+          {
             disp = DRAW2D;
+            resetCamera(); 
+          }
             break;
 		default:
 			/* Unrecognized keypress */
@@ -130,38 +159,125 @@ void myKeyHandler(unsigned char ch, int x, int y) {
 	return;
 }
 
-void myMouseButton(int button, int state, int x, int y) {
-	if (state == GLUT_DOWN) {
-		if (button == GLUT_LEFT_BUTTON) {
-			// Add a point, if there is room
+/* The current mode the mouse is in, based on what button(s) is pressed */
+int mouse_mode;
 
-		    if (num_draw_pts < MAX_POINT && x >= 200)
-            {
-               // std::cout << "real coordinate";
-    		//	printf("%i: (%3d, %3d)\n", num_draw_pts, x, y);
-    			x = x - W / 2;
-    			y = -(y - H / 2);
-    			if (x >= -5 && x <= 5)
-    			    x = 0;
-    			printf("%i: (%3d, %3d)\n", num_draw_pts, x, y);
-                i0_x[num_draw_pts] = x;
-                i0_y[num_draw_pts] = y;
-                ++num_draw_pts;
-            }
-            else
-            {
-                printf("Exceeded the maximum number of control points or the point is out of range \n");
-            }
-		}
-	    else if (button == GLUT_RIGHT_BUTTON)
-	    {
-	        if (num_draw_pts > 0)
-	        {
-	            printf("deleted control point %i\n", num_draw_pts - 1); 
-    	        --num_draw_pts;
-            }
-	    }
-	    display();
+/* The last position of the mouse since the last callback */
+int m_last_x, m_last_y;
+
+void myMouseButton(int button, int state, int x, int y) {
+  if(disp == DRAW2D)
+  {
+  
+    // reset rotate vals
+    m_last_x = 0;
+    m_last_y = 0;
+    
+	  if (state == GLUT_DOWN) {
+		  if (button == GLUT_LEFT_BUTTON) {
+			  // Add a point, if there is room
+
+		      if (num_i0_pts < MAX_POINT && x >= 200)
+              {
+                 // std::cout << "real coordinate";
+      		//	printf("%i: (%3d, %3d)\n", num_i0_pts, x, y);
+      			x = x - W / 2;
+      			y = -(y - H / 2);
+      			if (x >= -5 && x <= 5)
+      			    x = 0;
+      			printf("%i: (%3d, %3d)\n", num_i0_pts, x, y);
+                  i0_x[num_i0_pts] = x;
+                  i0_y[num_i0_pts] = y;
+                  ++num_i0_pts;
+                  
+              }
+              else
+              {
+                  printf("Exceeded the maximum number of control points or the point is out of range \n");
+              }
+		  }
+	      else if (button == GLUT_RIGHT_BUTTON)
+	      {
+	          if (num_i0_pts > 0)
+	          {
+	              printf("deleted control point %i\n", num_i0_pts - 1); 
+      	        --num_i0_pts;
+              }
+	      }
+	  }
+  }
+  else 
+  {
+  	if (state == GLUT_DOWN) {
+		  m_last_x = x;
+		  m_last_y = y;
+
+		  if (button == GLUT_LEFT_BUTTON) {
+			  mouse_mode = MOUSE_ROTATE_YX;
+		  } else if (button == GLUT_MIDDLE_BUTTON) {
+			  mouse_mode = MOUSE_ROTATE_YZ;
+		  } else if (button == GLUT_RIGHT_BUTTON) {
+			  mouse_mode = MOUSE_ZOOM;
+		  }
+	  }
+  }
+  display();
+}
+
+void myMouseMotion(int x, int y) {
+  if (disp == DRAW3D)
+  {
+	  double d_x, d_y;	/* The change in x and y since the last callback */
+
+	  d_x = x - m_last_x;
+	  d_y = y - m_last_y;
+
+	  m_last_x = x;
+	  m_last_y = y;
+
+	  if (mouse_mode == MOUSE_ROTATE_YX) {
+		  /* scaling factors */
+		  d_x /= 2.0;
+		  d_y /= 2.0;
+      printf("ROTATING YX\n");
+		  glRotatef(d_x, 0.0, 1.0, 0.0);	/* y-axis rotation */
+		  glRotatef(-d_y, 1.0, 0.0, 0.0);	/* x-axis rotation */
+
+	  } else if (mouse_mode == MOUSE_ROTATE_YZ) {
+		  /* scaling factors */
+		  d_x /= 2.0;
+		  d_y /= 2.0;
+      printf("ROTATING YZ\n");
+		  glRotatef(d_x, 0.0, 1.0, 0.0);	/* y-axis rotation */
+		  glRotatef(-d_y, 0.0, 0.0, 1.0);	/* z-axis rotation */
+
+	  } 
+  #if 0
+    else if (mouse_mode == MOUSE_ZOOM) {
+		  d_y /= 100.0;
+
+		  zoomFactor += d_y;
+
+		  if (zoomFactor <= 0.0) {
+			  /* The zoom factor should be positive */
+			  zoomFactor = 0.001;
+		  }
+
+		  glMatrixMode(GL_PROJECTION);
+		  glLoadIdentity();
+
+		  /*
+		   * glFrustum must receive positive values for the near and far
+		   * clip planes ( arguments 5 and 6 ).
+		   */
+		  glFrustum(fleft*zoomFactor, fright*zoomFactor,
+			  fbottom*zoomFactor, ftop*zoomFactor,
+			  -zNear, -zFar);
+	  }
+  #endif
+
+	  /* Redraw the screen */
+	  glutPostRedisplay();
 	}
 }
 
