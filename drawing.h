@@ -10,7 +10,7 @@ enum DISP_MODE{ DRAW2D, DRAW3D };
 void drawSurface(void);
 
 void draw2D ();
-void draw3D ();
+void draw3D (bool,bool);
 GLfloat cosLaw(GLfloat, GLfloat, GLfloat);
 
 extern DISP_MODE disp;

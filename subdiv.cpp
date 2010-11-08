@@ -44,6 +44,9 @@ void myKeyHandler(unsigned char ch, int x, int y);
 void myMouseButton(int button, int state, int x, int y);
 void endSubdiv(int status);
 
+bool wireMode = false;
+bool pointMode = false;
+
 
 
 
@@ -108,6 +111,7 @@ void display() {
     switch(disp){
      //2D or 3D
       case DRAW2D:
+        printf("CALLING draw2D\n");
         glColor3f(1.0, 1.0, 1.0);
         glBegin(GL_LINES);
         glVertex2f(0.0, -H);
@@ -116,7 +120,8 @@ void display() {
         draw2D();
         break;
       case DRAW3D:
-        draw3D();
+        printf("CALLING draw3D\n");
+        draw3D(wireMode, pointMode);
         break;
         default:
         break;
@@ -147,7 +152,41 @@ void myKeyHandler(unsigned char ch, int x, int y) {
             disp = DRAW2D;
             resetCamera(); 
           }
-            break;
+          break;
+    case 'e':
+      if (disp == DRAW3D)
+      {
+        wireMode = !wireMode;
+        if (wireMode)
+          printf("Switched to wire frame mode\n");
+        else
+          printf("Switched to solid mode\n");
+      }
+      break;
+    case 'r':
+      if (disp == DRAW3D)
+      {
+        pointMode = !pointMode;
+        if (pointMode)
+          printf("Switched to point mode\n");
+        else
+          printf("Switched to faces mode\n");
+      }
+      break;
+    case 'a':
+      if (disp == DRAW3D)
+      {
+        printf("Applying vertical subdivision\n");
+        if (subdiv_v < 6)
+          ++subdiv_v;
+      }
+    case 'b':
+      if (disp == DRAW3D)
+      {
+        printf("Applying horizontal subdivision\n");
+        if (subdiv_h < 6)
+          ++subdiv_h;
+      }
 		default:
 			/* Unrecognized keypress */
 		return;
