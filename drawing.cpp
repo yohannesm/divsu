@@ -53,9 +53,9 @@ void genFirstPoints()
     poly[1] = p2;
     poly[2] = p3;
     
-    printf("level %i p1: (%f, %f, %f)\n", i, p1[0], p1[1], p1[2]);
-    printf("level %i p2: (%f, %f, %f)\n", i, p2[0], p2[1], p2[2]);
-    printf("level %i p3: (%f, %f, %f)\n", i, p3[0], p3[1], p3[2]);
+    //printf("level %i p1: (%f, %f, %f)\n", i, p1[0], p1[1], p1[2]);
+    //printf("level %i p2: (%f, %f, %f)\n", i, p2[0], p2[1], p2[2]);
+    //printf("level %i p3: (%f, %f, %f)\n", i, p3[0], p3[1], p3[2]);
 
     poly_list[i] = poly;
     num_draw_pts += 3;
@@ -67,15 +67,12 @@ void draw3D(bool wire, bool points){
   int numOfLevels = pow(2, subdiv_v) * num_i0_pts;
   int numPointsInLevel = pow(2, subdiv_h) * 3;
   int totalNumPoints = numOfLevels * numPointsInLevel;
-  printf("curSubDivV : %i and subdiv_v : %i\n", curSubDivV, subdiv_v);
-  printf("curSubDivH : %i and subdiv_h : %i\n", curSubDivH, subdiv_h);  
+  //printf("curSubDivV : %i and subdiv_v : %i\n", curSubDivV, subdiv_v);
+  //printf("curSubDivH : %i and subdiv_h : %i\n", curSubDivH, subdiv_h);  
   
-  if(num_i0_pts <5){
-    //print error message
-    printf("Need more than 5 points to do this \n");
-  }
 
-  else if (subdiv_v == 0 && subdiv_h == 0){
+
+  if (subdiv_v == 0 && subdiv_h == 0){
     genFirstPoints();
   }
   else
@@ -92,7 +89,7 @@ void draw3D(bool wire, bool points){
     if (curSubDivH == (subdiv_h - 1))
     {
       //printf("SUBDIVIDING HORIZONTALLY\n");
-      printf("numPointsInLevel %i\n", numPointsInLevel);
+      //printf("numPointsInLevel %i\n", numPointsInLevel);
       // sub divide horizontally
       for (int l = 0; l < numOfLevels; ++l)
       {
@@ -103,18 +100,18 @@ void draw3D(bool wire, bool points){
         for (int p = 0; p < numPointsInLevel; ++p)
         {
           GLfloat* newP = new GLfloat[3];
-          printf("p %i\n", p);
+          //printf("p %i\n", p);
           if ((p & 1) == 0)
           {
             int oldInd = p >> 1;
             int oldIntpo = (oldInd + 1) % (numPointsInLevel >> 1);
             int oldIntmo = (oldInd - 1) % (numPointsInLevel >> 1);
             
-            printf("before oldIntmo = %i\n", oldIntmo);
+            //printf("before oldIntmo = %i\n", oldIntmo);
             if (oldIntmo < 0)
               oldIntmo += (numPointsInLevel >> 1);
 
-            printf("after oldIntmo = %i\n", oldIntmo);
+            //printf("after oldIntmo = %i\n", oldIntmo);
             newP[0] = (oldLevel[oldIntmo][0] + 6 * oldLevel[oldInd][0] + oldLevel[oldIntpo][0]) / 8;
             newP[1] = (oldLevel[oldIntmo][1] + 6 * oldLevel[oldInd][1] + oldLevel[oldIntpo][1]) / 8;
             newP[2] = (oldLevel[oldIntmo][2] + 6 * oldLevel[oldInd][2] + oldLevel[oldIntpo][2]) / 8;
