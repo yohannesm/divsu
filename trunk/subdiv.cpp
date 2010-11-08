@@ -105,13 +105,11 @@ void display() {
 	 * Note: Only one should be called at a time (based on the
 	 * display mode).
 	 */
-	 
-
 
     switch(disp){
      //2D or 3D
       case DRAW2D:
-        printf("CALLING draw2D\n");
+        //printf("CALLING draw2D\n");
         glColor3f(1.0, 1.0, 1.0);
         glBegin(GL_LINES);
         glVertex2f(0.0, -H);
@@ -120,10 +118,11 @@ void display() {
         draw2D();
         break;
       case DRAW3D:
-        printf("CALLING draw3D\n");
+        //printf("CALLING draw3D\n");
         draw3D(wireMode, pointMode);
+
         break;
-        default:
+      default:
         break;
     }
 	//drawSurface();
@@ -145,13 +144,17 @@ void myKeyHandler(unsigned char ch, int x, int y) {
 			endSubdiv(0);
 			break;
         case 'w':
-          if(disp == DRAW2D)
-            disp = DRAW3D;
-          else
+          if (disp == DRAW3D)
           {
             disp = DRAW2D;
             resetCamera(); 
           }
+          else if(num_i0_pts < 5){
+            //print error message
+            printf("Need more than 5 points to do this \n");
+          }
+          else
+            disp = DRAW3D;
           break;
     case 'e':
       if (disp == DRAW3D)
@@ -278,7 +281,7 @@ void myMouseMotion(int x, int y) {
 		  /* scaling factors */
 		  d_x /= 2.0;
 		  d_y /= 2.0;
-      printf("ROTATING YX\n");
+      //printf("ROTATING YX\n");
 		  glRotatef(d_x, 0.0, 1.0, 0.0);	/* y-axis rotation */
 		  glRotatef(-d_y, 1.0, 0.0, 0.0);	/* x-axis rotation */
 
@@ -286,7 +289,7 @@ void myMouseMotion(int x, int y) {
 		  /* scaling factors */
 		  d_x /= 2.0;
 		  d_y /= 2.0;
-      printf("ROTATING YZ\n");
+      //printf("ROTATING YZ\n");
 		  glRotatef(d_x, 0.0, 1.0, 0.0);	/* y-axis rotation */
 		  glRotatef(-d_y, 0.0, 0.0, 1.0);	/* z-axis rotation */
 
