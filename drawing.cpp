@@ -26,119 +26,34 @@ int subdiv_h = 0; // The user-specified subdivision level, horizontal
 int curSubDivV = 0;
 int curSubDivH = 0;
 
+int oldNumOfLevels = 0;
 
+int calcNumOfLevels(int subDivDepth)
+{
+  if (subDivDepth == 0)
+    return num_i0_pts;
+  else
+  {
+    return calcNumOfLevels(subDivDepth - 1) * 2 - 1;
+  }
+}
+
+int calcNumPointsInLevel (int subDivDepth)
+{
+  return pow(2, subDivDepth) * 3;
+}
 
 /* The parameter list may need to be changed for the functions in this file */
 DISP_MODE disp = DRAW2D;
-void drawSurface(void) {
-
-}
-
-void genFirstPoints()
+void drawShape(bool wire, bool points) 
 {
-  poly_list = new GLfloat**[num_i0_pts];
 
-  //draw the 3-D extrusion
-  for(int i=0; i<num_i0_pts; ++i){
-    GLfloat** poly = new GLfloat*[3];
-
-    GLfloat* p1 = new GLfloat[3];
-    GLfloat* p2 = new GLfloat[3];
-    GLfloat* p3 = new GLfloat[3];
-    p1[0] = i0_x[i]; p1[1] = i0_y[i]; p1[2] = 0; 
-    p2[0] = cos(120*PI/180) * i0_x[i]; p2[1] = i0_y[i]; p2[2] = sin(120*PI/180) * i0_x[i];
-    p3[0] = cos(-120*PI/180) * i0_x[i]; p3[1] = i0_y[i]; p3[2] = sin(-120*PI/180) * i0_x[i];
-
-    poly[0] = p1;
-    poly[1] = p2;
-    poly[2] = p3;
-    
-    //printf("level %i p1: (%f, %f, %f)\n", i, p1[0], p1[1], p1[2]);
-    //printf("level %i p2: (%f, %f, %f)\n", i, p2[0], p2[1], p2[2]);
-    //printf("level %i p3: (%f, %f, %f)\n", i, p3[0], p3[1], p3[2]);
-
-    poly_list[i] = poly;
-    num_draw_pts += 3;
-  }
-}
-
-void draw3D(bool wire, bool points){
-
-  int numOfLevels = pow(2, subdiv_v) * num_i0_pts;
-  int numPointsInLevel = pow(2, subdiv_h) * 3;
-  int totalNumPoints = numOfLevels * numPointsInLevel;
-  //printf("curSubDivV : %i and subdiv_v : %i\n", curSubDivV, subdiv_v);
-  //printf("curSubDivH : %i and subdiv_h : %i\n", curSubDivH, subdiv_h);  
+  int numOfLevels = calcNumOfLevels(subdiv_v);
+  int numPointsInLevel = calcNumPointsInLevel(subdiv_h);
+  //int totalNumPoints = numOfLevels * numPointsInLevel;
   
-
-
-  if (subdiv_v == 0 && subdiv_h == 0){
-    genFirstPoints();
-  }
-  else
-  {
-    if (curSubDivV == (subdiv_v - 1))
-    {
-      // sub divide vertically
-
-      
-    }
-    else if(curSubDivV != subdiv_v)
-      printf("ERROR INVALID VALUES curSubDivV is %i and subdiv_v is %i\n", curSubDivV, subdiv_v);
-    
-    if (curSubDivH == (subdiv_h - 1))
-    {
-      //printf("SUBDIVIDING HORIZONTALLY\n");
-      //printf("numPointsInLevel %i\n", numPointsInLevel);
-      // sub divide horizontally
-      for (int l = 0; l < numOfLevels; ++l)
-      {
-        //printf("SUBDIVIDING LEVEL %i\n", l);
-        GLfloat** newLevel = new GLfloat*[numPointsInLevel];
-        GLfloat** oldLevel = poly_list[l];
-        // dont do anything for the zero case
-        for (int p = 0; p < numPointsInLevel; ++p)
-        {
-          GLfloat* newP = new GLfloat[3];
-          //printf("p %i\n", p);
-          if ((p & 1) == 0)
-          {
-            int oldInd = p >> 1;
-            int oldIntpo = (oldInd + 1) % (numPointsInLevel >> 1);
-            int oldIntmo = (oldInd - 1) % (numPointsInLevel >> 1);
-            
-            //printf("before oldIntmo = %i\n", oldIntmo);
-            if (oldIntmo < 0)
-              oldIntmo += (numPointsInLevel >> 1);
-
-            //printf("after oldIntmo = %i\n", oldIntmo);
-            newP[0] = (oldLevel[oldIntmo][0] + 6 * oldLevel[oldInd][0] + oldLevel[oldIntpo][0]) / 8;
-            newP[1] = (oldLevel[oldIntmo][1] + 6 * oldLevel[oldInd][1] + oldLevel[oldIntpo][1]) / 8;
-            newP[2] = (oldLevel[oldIntmo][2] + 6 * oldLevel[oldInd][2] + oldLevel[oldIntpo][2]) / 8;
-          } 
-          else
-          {
-            int oldInd = (p - 1) / 2;
-            int oldIntpo = (oldInd + 1) % (numPointsInLevel >> 1);
-            newP[0] = (4 * oldLevel[oldInd][0] + 4 * oldLevel[oldIntpo][0]) / 8;
-            newP[1] = (4 * oldLevel[oldInd][1] + 4 * oldLevel[oldIntpo][1]) / 8;
-            newP[2] = (4 * oldLevel[oldInd][2] + 4 * oldLevel[oldIntpo][2]) / 8;
-          }
-          
-          //printf("newP : (%f, %f, %f)\n", newP[0], newP[1], newP[2]);
-          newLevel[p] = newP;
-        }
-        poly_list[l] = newLevel;
-        for (int q = 0; q < numPointsInLevel >> 1; ++q)
-          delete[] oldLevel[q];
-        delete[] oldLevel;
-      }
-      ++curSubDivH;
-    }
-    else if(curSubDivH != subdiv_h)
-      printf("ERROR INVALID VALUES curSubDivH is %i and subdiv_h is %i", curSubDivH, subdiv_h);
-  }  
-
+  printf("numOfLevels %i\n", numOfLevels);
+  printf("numPointsInLevel %i\n", numPointsInLevel);
   
   glMatrixMode(GL_MODELVIEW);
   if (points)
@@ -205,12 +120,214 @@ void draw3D(bool wire, bool points){
       }
     }
   }
-} // end draw3D
-
-void generatePoints()
-{
-    
 }
+
+void genFirstPoints()
+{
+  curSubDivV = 0;
+  curSubDivH = 0;
+  poly_list = new GLfloat**[num_i0_pts];
+
+  //draw the 3-D extrusion
+  for(int i=0; i<num_i0_pts; ++i){
+    GLfloat** poly = new GLfloat*[3];
+
+    GLfloat* p1 = new GLfloat[3];
+    GLfloat* p2 = new GLfloat[3];
+    GLfloat* p3 = new GLfloat[3];
+    p1[0] = i0_x[i]; p1[1] = i0_y[i]; p1[2] = 0; 
+    p2[0] = cos(120*PI/180) * i0_x[i]; p2[1] = i0_y[i]; p2[2] = sin(120*PI/180) * i0_x[i];
+    p3[0] = cos(-120*PI/180) * i0_x[i]; p3[1] = i0_y[i]; p3[2] = sin(-120*PI/180) * i0_x[i];
+
+    poly[0] = p1;
+    poly[1] = p2;
+    poly[2] = p3;
+    
+    printf("level %i p1: (%f, %f, %f)\n", i, p1[0], p1[1], p1[2]);
+    printf("level %i p2: (%f, %f, %f)\n", i, p2[0], p2[1], p2[2]);
+    printf("level %i p3: (%f, %f, %f)\n", i, p3[0], p3[1], p3[2]);
+
+    poly_list[i] = poly;
+    num_draw_pts += 3;
+  }
+  oldNumOfLevels = 0;
+}
+
+void subdivideH()
+{
+  int numOfLevels = calcNumOfLevels(subdiv_v);
+  int numPointsInLevel = calcNumPointsInLevel(curSubDivH + 1);
+  //int totalNumPoints = numOfLevels * numPointsInLevel;
+  printf("SUBDIVIDING HORIZONTALLY\n");
+  printf("numPointsInLevel %i\n", numPointsInLevel);
+  // sub divide horizontally
+  for (int l = 0; l < numOfLevels; ++l)
+  {
+    printf("SUBDIVIDING LEVEL %i\n", l);
+    GLfloat** newLevel = new GLfloat*[numPointsInLevel];
+    GLfloat** oldLevel = poly_list[l];
+    
+    for (int p = 0; p < numPointsInLevel; ++p)
+    {
+      GLfloat* newP = new GLfloat[3];
+      //printf("p %i\n", p);
+      if ((p & 1) == 0)
+      {
+        int oldInd = p >> 1;
+        int oldIntpo = (oldInd + 1) % (numPointsInLevel >> 1);
+        int oldIntmo = (oldInd - 1) % (numPointsInLevel >> 1);
+        
+        //printf("before oldIntmo = %i\n", oldIntmo);
+        if (oldIntmo < 0)
+          oldIntmo += (numPointsInLevel >> 1);
+
+        //printf("after oldIntmo = %i\n", oldIntmo);
+        newP[0] = (oldLevel[oldIntmo][0] + 6 * oldLevel[oldInd][0] + oldLevel[oldIntpo][0]) / 8;
+        newP[1] = (oldLevel[oldIntmo][1] + 6 * oldLevel[oldInd][1] + oldLevel[oldIntpo][1]) / 8;
+        newP[2] = (oldLevel[oldIntmo][2] + 6 * oldLevel[oldInd][2] + oldLevel[oldIntpo][2]) / 8;
+      } 
+      else
+      {
+        int oldInd = (p - 1) / 2;
+        int oldIntpo = (oldInd + 1) % (numPointsInLevel >> 1);
+        newP[0] = (4 * oldLevel[oldInd][0] + 4 * oldLevel[oldIntpo][0]) / 8;
+        newP[1] = (4 * oldLevel[oldInd][1] + 4 * oldLevel[oldIntpo][1]) / 8;
+        newP[2] = (4 * oldLevel[oldInd][2] + 4 * oldLevel[oldIntpo][2]) / 8;
+      }
+      
+      //printf("newP : (%f, %f, %f)\n", newP[0], newP[1], newP[2]);
+      newLevel[p] = newP;
+    }
+    poly_list[l] = newLevel;
+    for (int q = 0; q < numPointsInLevel >> 1; ++q)
+      delete[] oldLevel[q];
+    delete[] oldLevel;
+  }
+}
+
+
+void subdivideV()
+{
+  
+  int numOfLevels = calcNumOfLevels(curSubDivV + 1);
+  int numPointsInLevel = calcNumPointsInLevel(subdiv_h);
+  int oldNumOfLevels = calcNumOfLevels(curSubDivV);
+  //int totalNumPoints = numOfLevels * numPointsInLevel;
+  printf("SUBDIVIDING VERTICALLY\n");
+  printf("numOfLevels %i\n", numOfLevels);
+  printf("oldNumOfLevels %i\n", oldNumOfLevels);
+  // sub divide VERTICALLY
+  GLfloat*** newPolyList = new GLfloat**[numOfLevels]; //new GLfloat[3][numPointsInLevel][numOfLevels];
+  
+  for (int l = 0; l < numOfLevels; ++l)
+  {
+    printf("SUBDIVIDING in LEVEL %i\n", l);
+    GLfloat** newLevel = new GLfloat*[numPointsInLevel];
+    if (l == 0 || l == numOfLevels - 1)
+    {
+      int oldInd = l;
+      if (l == numOfLevels - 1)
+        oldInd = oldNumOfLevels - 1;
+        
+      for (int p = 0; p < numPointsInLevel; ++p)
+      {
+        GLfloat* newP = new GLfloat[3];
+        for (int i = 0; i < 3; ++i)
+          newP[i] = poly_list[oldInd][p][i];
+        newLevel[p] = newP;
+      }
+    }
+    else if ((l & 1) == 0)
+    {
+      // these are indices of levels
+      int oldInd = l >> 1;
+      int oldIntpo = (oldInd + 1) % oldNumOfLevels;
+      int oldIntmo = (oldInd - 1) % oldNumOfLevels;
+      
+      //printf("before oldIntmo = %i\n", oldIntmo);
+      if (oldIntmo < 0)
+        oldIntmo += oldNumOfLevels;
+        
+      printf("oldInd : %i\n", oldInd);
+      printf("oldIntpo : %i\n", oldIntpo);
+      printf("oldIntmo : %i\n", oldIntmo);
+      
+      for (int p = 0; p < numPointsInLevel; ++p)
+      {
+        printf("point %i\n", p);
+        GLfloat* newP = new GLfloat[3];
+        newP[0] = (poly_list[oldIntmo][p][0] + 6 * poly_list[oldInd][p][0] + poly_list[oldIntpo][p][0]) / 8;
+        newP[1] = (poly_list[oldIntmo][p][1] + 6 * poly_list[oldInd][p][1] + poly_list[oldIntpo][p][1]) / 8;
+        newP[2] = (poly_list[oldIntmo][p][2] + 6 * poly_list[oldInd][p][2] + poly_list[oldIntpo][p][2]) / 8;
+        
+        newLevel[p] = newP;
+      }
+    }
+    else
+    {
+      int oldInd = (l - 1) / 2;
+      int oldIntpo = (oldInd + 1) % oldNumOfLevels;
+      
+      for (int p = 0; p < numPointsInLevel; ++p)
+      {
+        GLfloat* newP = new GLfloat[3];
+        newP[0] = (4 * poly_list[oldInd][p][0] + 4 * poly_list[oldIntpo][p][0]) / 8;
+        newP[1] = (4 * poly_list[oldInd][p][1] + 4 * poly_list[oldIntpo][p][1]) / 8;
+        newP[2] = (4 * poly_list[oldInd][p][2] + 4 * poly_list[oldIntpo][p][2]) / 8;
+        
+        newLevel[p] = newP;
+      }
+    }
+    newPolyList[l] = newLevel;
+  }
+  for (int l = 0; l < oldNumOfLevels; ++l)
+  {
+    for (int p = 0; p < numPointsInLevel; ++p)
+      delete[] poly_list[l][p];
+      
+    delete[] poly_list[l];
+  }
+  delete[] poly_list;
+  poly_list = newPolyList;
+}
+
+void draw3D(bool wire, bool points){
+
+  // tehse values are dependent on the what we are subdividing
+  //int numOfLevels = -1354;//pow(2, subdiv_v) * num_i0_pts; 
+  //int numPointsInLevel = -1354;//pow(2, subdiv_h) * 3;
+  //int totalNumPoints = -1354;//numOfLevels * numPointsInLevel;
+  printf("curSubDivV : %i and subdiv_v : %i\n", curSubDivV, subdiv_v);
+  printf("curSubDivH : %i and subdiv_h : %i\n", curSubDivH, subdiv_h);  
+
+  if (subdiv_v == 0 && subdiv_h == 0){
+    // if this is the first time we need to generate the points
+    genFirstPoints();
+  }
+  else
+  {
+    // other wise perform the subdivisions if needed
+    while (curSubDivV < subdiv_v)
+    {
+      // sub divide vertically
+      subdivideV();
+      ++curSubDivV;
+    }
+    if(curSubDivV > subdiv_v)
+      printf("ERROR INVALID VALUES curSubDivV is %i and subdiv_v is %i\n", curSubDivV, subdiv_v);
+    
+    while (curSubDivH < subdiv_h)
+    {
+      subdivideH();
+      ++curSubDivH;
+    }
+    if(curSubDivH > subdiv_h)
+      printf("ERROR INVALID VALUES curSubDivH is %i and subdiv_h is %i\n", curSubDivH, subdiv_h);
+  }  
+  
+  drawShape(wire, points);
+
+} // end draw3D
 
 void draw2D (){
 
@@ -243,6 +360,18 @@ void draw2D (){
 GLfloat cosLaw(GLfloat a, GLfloat b, GLfloat theta){
    theta = (theta*PI/180);
    return sqrt(a*a + b*b - 2*a*b* cos(theta));
+}
+
+void cleanPolyList()
+{
+  for (int l = 0; l < calcNumOfLevels(subdiv_v); ++l)
+  {
+    for (int p = 0; p < calcNumPointsInLevel(subdiv_h); ++p)
+      delete[] poly_list[l][p];
+      
+    delete[] poly_list[l];
+  }
+  delete[] poly_list;
 }
 
 
