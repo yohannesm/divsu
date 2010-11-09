@@ -148,6 +148,11 @@ void myKeyHandler(unsigned char ch, int x, int y) {
           {
             disp = DRAW2D;
             resetCamera(); 
+            cleanPolyList();
+            
+            subdiv_v = 0;
+            subdiv_h = 0;
+            
           }
           else if(num_i0_pts < 5){
             //print error message
@@ -156,6 +161,7 @@ void myKeyHandler(unsigned char ch, int x, int y) {
           else
             disp = DRAW3D;
           break;
+          
     case 'e':
       if (disp == DRAW3D)
       {
@@ -166,6 +172,7 @@ void myKeyHandler(unsigned char ch, int x, int y) {
           printf("Switched to solid mode\n");
       }
       break;
+      
     case 'r':
       if (disp == DRAW3D)
       {
@@ -176,27 +183,41 @@ void myKeyHandler(unsigned char ch, int x, int y) {
           printf("Switched to faces mode\n");
       }
       break;
+      
     case 'a':
       if (disp == DRAW3D)
       {
-        printf("Applying vertical subdivision\n");
         if (subdiv_v < 6)
+        {
           ++subdiv_v;
+          printf("Applying vertical subdivision\n");
+        }
+        else
+          printf("Maximum vertical subdivisions reached\n");
       }
+      break;
+      
     case 'b':
       if (disp == DRAW3D)
       {
-        printf("Applying horizontal subdivision\n");
+
         if (subdiv_h < 6)
+        {
           ++subdiv_h;
+          printf("Applying horizontal subdivision\n");
+        } 
+        else
+          printf("Maximum horizontal subdivisions reached\n");
       }
+      break;
+      
 		default:
 			/* Unrecognized keypress */
-		return;
+		  break;
 	}
 
 	glutPostRedisplay();
-    //display();
+  //display();
 
 	return;
 }

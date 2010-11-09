@@ -12,6 +12,10 @@ void drawSurface(void);
 void draw2D ();
 void draw3D (bool,bool);
 GLfloat cosLaw(GLfloat, GLfloat, GLfloat);
+int calcNumPointsInLevel (int subDivDepth);
+int calcNumOfLevels(int subDivDepth);
+
+void cleanPolyList();
 
 extern DISP_MODE disp;
 extern GLfloat*** poly_list;
