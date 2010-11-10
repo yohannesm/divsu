@@ -119,15 +119,17 @@ void computeGNormals()
           
         if (l == 0)
         {
-          norm[0] = 0;
-          norm[1] = 0;
-          norm[2] = 0;
+          norm[0] = 0.0;
+          norm[1] = 0.0;
+          norm[2] = 0.0;
+          normLevels[p] = norm;
         }
         else if (l == numOfLevels - 1)
         {
-          norm[0] = 0;
-          norm[1] = 0;
-          norm[2] = 0;
+          norm[0] = 0.0;
+          norm[1] = 0.0;
+          norm[2] = 0.0;
+          normLevels[p] = norm;
         }
         else
         {
@@ -149,10 +151,10 @@ void computeGNormals()
           drawNormal(poly_list[l][p], norm);
           normLevels[p] = norm;
                                
-          delete n0;
-          delete n1;
-          delete n2;
-          delete n3;
+          delete[] n0;
+          delete[] n1;
+          delete[] n2;
+          delete[] n3;
         }
         //drawNormal(poly_list[l][p], trueN);
         
@@ -485,18 +487,19 @@ void draw3D(bool wire, bool points)
       printf("ERROR INVALID VALUES curSubDivH is %i and subdiv_h is %i\n", curSubDivH, subdiv_h);
   }  
   
-  ///computeGNormals();
+  computeGNormals();
   drawShape(wire, points);
   
   int numOfLevels = calcNumOfLevels(subdiv_v);
   int numPointsLevels = calcNumPointsInLevel(subdiv_h);
   
   printf("nol : %i , npl : %i\n", numOfLevels, numPointsLevels);
-  #if 0
+  #if 1
   for (int l = 0; l < numOfLevels; ++l)
   {
-    for (int p = 0; p < numPointsLevels; ++p)
+    for (int p = 0; p < numPointsLevels; ++p){
       delete[] vert_normals[l][p];
+      }
       
     delete[] vert_normals[l];
   }
