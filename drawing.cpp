@@ -26,7 +26,36 @@ int subdiv_h = 0; // The user-specified subdivision level, horizontal
 int curSubDivV = 0;
 int curSubDivH = 0;
 
+
 int oldNumOfLevels = 0;
+
+GLfloat magnitVec(GLfloat* v){
+ return sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2] );
+}
+
+GLfloat* normCrossProduct(GLfloat* x, GLfloat* y){
+     GLfloat* result = new GLfloat[3];
+     result[0] = (x[1] * y[2]) - (x[2] * y[1]);
+     result[1] = (x[2] * y[0]) - (x[0] * y[2]);
+     result[2] = (x[0] * y[1]) - (x[1] * y[0]);
+
+     GLfloat mag = magnitVec(result);
+     result[0] /= mag;
+     result[1] /= mag;
+     result[2] /= mag;
+
+     return result;
+}
+
+GLfloat* compNormal(GLfloat* a, GLfloat* b, GLfloat* c){
+        GLfloat v1[3] = {b[0]-a[0], b[1]-a[1], b[2]-a[2]};
+        GLfloat v2[3] = {c[0]-a[0], c[1]-a[1], c[2]-a[2]};
+        
+        return normCrossProduct(v1, v2);
+}
+
+
+
 
 int calcNumOfLevels(int subDivDepth)
 {
@@ -47,6 +76,42 @@ int calcNumPointsInLevel (int subDivDepth)
 DISP_MODE disp = DRAW2D;
 void drawShape(bool wire, bool points) 
 {
+  
+  // glEnable(GL_NORMALIZE);
+  glShadeModel(GL_SMOOTH);
+
+  GLfloat diffuse0[] = {0.0, 1.0, 0.0, 1.0};
+  GLfloat ambient0[] = {0.0, 1.0, 0.0, 1.0};
+  GLfloat specular0[] = {0.0, 1.0, 0.0, 1.0};
+  GLfloat light0_pos[] = {1.0, 2.0, 4.0, 1.0};
+
+  glEnable(GL_LIGHTING);
+  glEnable(GL_LIGHT0);
+  glLightfv(GL_LIGHT0, GL_POSITION, light0_pos);
+  glLightfv(GL_LIGHT0, GL_AMBIENT, ambient0);
+  glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse0);
+  glLightfv(GL_LIGHT0, GL_SPECULAR, specular0);
+  //GLfloat attenu = 0.8;
+  //glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, attenu);
+
+  glEnable(GL_COLOR_MATERIAL);
+  GLfloat ambient[] = {0.2, 0.2, 0.2, 1.0};
+  GLfloat diffuse[] = {1.0, 0.8, 0.0, 1.0};
+  GLfloat specular[] = {1.0, 1.0, 1.0, 1.0};
+  //GLfloat shine = 20.0;
+  glMaterialfv(GL_FRONT, GL_AMBIENT, ambient);
+  glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse);
+  glMaterialfv(GL_FRONT, GL_SPECULAR, specular);
+  //glMaterialfv(GL_FRONT, GL_SHININESS, shine);
+
+
+  glMaterialfv(GL_BACK, GL_AMBIENT, ambient);
+  glMaterialfv(GL_BACK, GL_DIFFUSE, diffuse);
+  glMaterialfv(GL_BACK, GL_SPECULAR, specular);
+  //glMaterialfv(GL_BACK, GL_SHININESS, shine);
+
+  GLfloat emission[] = {0.0, 0.3, 0.3, 1.0};
+  glMaterialfv(GL_FRONT, GL_EMISSION, emission);
 
   int numOfLevels = calcNumOfLevels(subdiv_v);
   int numPointsInLevel = calcNumPointsInLevel(subdiv_h);
@@ -71,7 +136,8 @@ void drawShape(bool wire, bool points)
     // draw top tri
     for(int l = 0; l < numOfLevels - 1; ++l)
     {
-    	glColor3f( (l%3 == 0 ? 1 : 0), (l%3 == 1 ? 1 : 0), (l%3 == 2 ? 1 : 0));
+    	//glColor3f( (l%3 == 0 ? 1 : 0), (l%3 == 1 ? 1 : 0), (l%3 == 2 ? 1 : 0));
+    	glColor3f(0.0, 0.0, 1.0);
       for (int p = 0; p < numPointsInLevel; ++p)
       {
         int ppo = (p + 1) % numPointsInLevel;
@@ -90,7 +156,8 @@ void drawShape(bool wire, bool points)
     // draw top tri
     for(int l = 0; l < numOfLevels - 1; ++l)
     {
-    	glColor3f( (l%3 == 0 ? 1 : 0), (l%3 == 1 ? 1 : 0), (l%3 == 2 ? 1 : 0));
+    	//glColor3f( (l%3 == 0 ? 1 : 0), (l%3 == 1 ? 1 : 0), (l%3 == 2 ? 1 : 0));
+    	glColor3f(0.0, 0.0, 1.0);
       for (int p = 0; p < numPointsInLevel; ++p)
       {
         int ppo = (p + 1) % numPointsInLevel;
@@ -331,6 +398,9 @@ void draw3D(bool wire, bool points){
 
 void draw2D (){
 
+
+    glDisable(GL_LIGHTING);
+    glDisable(GL_COLOR_MATERIAL);
     
     glPointSize(2);
     glColor3f(0.0, 1.0, 0.0);

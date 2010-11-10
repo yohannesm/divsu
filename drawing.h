@@ -1,8 +1,6 @@
 #ifndef _DRAWING_H_
 #define _DRAWING_H_
 
-//test:W1
-
 /* Globals declared in drawing.cpp */
 extern int subdiv_v; // The user-specified subdivision level, vertical
 extern int subdiv_h; // The user-specified subdivision level, horizontal
