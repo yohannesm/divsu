@@ -148,7 +148,7 @@ void computeGNormals()
           norm[1] = (n0[1] + n1[1] + n2[1] + n3[1]) / 4;
           norm[2] = (n0[2] + n1[2] + n2[2] + n3[2]) / 4;
           
-          drawNormal(poly_list[l][p], norm);
+          //drawNormal(poly_list[l][p], norm);
           normLevels[p] = norm;
                                
           delete[] n0;
@@ -196,11 +196,11 @@ void drawShape(bool wire, bool points)
   GLfloat ambient[] = {0.2, 0.2, 0.2, 1.0};
   GLfloat diffuse[] = {1.0, 0.8, 0.0, 1.0};
   GLfloat specular[] = {1.0, 1.0, 1.0, 1.0};
-  //GLfloat shine = 20.0;
+  GLfloat shine[] = {1.0, 1.0, 1.0, 20.0};
   glMaterialfv(GL_FRONT, GL_AMBIENT, ambient);
   glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse);
   glMaterialfv(GL_FRONT, GL_SPECULAR, specular);
-  //glMaterialfv(GL_FRONT, GL_SHININESS, shine);
+  glMaterialfv(GL_FRONT, GL_SHININESS, shine);
 
 
   glMaterialfv(GL_BACK, GL_AMBIENT, ambient);
@@ -234,18 +234,26 @@ void drawShape(bool wire, bool points)
     // draw top tri
     for(int l = 0; l < numOfLevels - 1; ++l)
     {
-    	glColor3f( (l%3 == 0 ? 1 : 0), (l%3 == 1 ? 1 : 0), (l%3 == 2 ? 1 : 0));
-    	//glColor3f(0.0, 0.0, 1.0);
+    	//glColor3f( (l%3 == 0 ? 1 : 0), (l%3 == 1 ? 1 : 0), (l%3 == 2 ? 1 : 0));
+    	glColor3f(0.0, 0.0, 1.0);
       for (int p = 0; p < numPointsInLevel; ++p)
       {
         int ppo = (p + 1) % numPointsInLevel;
         
         glBegin(GL_QUADS);
         glVertex3fv(poly_list[l][p]);
+        glNormal3fv(vert_normals[l][p]);
+
         glVertex3fv(poly_list[l + 1][p]);
+        glNormal3fv(vert_normals[l+1][p]);
+
         glVertex3fv(poly_list[l + 1][ppo]);
+        glNormal3fv(vert_normals[l+1][ppo]);
+
         glVertex3fv(poly_list[l][ppo]);
+        glNormal3fv(vert_normals[l][ppo]);
         glEnd();
+
       }
     }
     // draw bottom tri
