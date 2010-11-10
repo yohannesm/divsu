@@ -46,6 +46,7 @@ void endSubdiv(int status);
 
 bool wireMode = false;
 bool pointMode = false;
+bool shineMode = false;
 
 
 
@@ -119,7 +120,7 @@ void display() {
         break;
       case DRAW3D:
         //printf("CALLING draw3D\n");
-        draw3D(wireMode, pointMode);
+        draw3D(wireMode, pointMode, shineMode);
 
         break;
       default:
@@ -141,26 +142,34 @@ void display() {
 void myKeyHandler(unsigned char ch, int x, int y) {
 	switch(ch) {
 		case 'q':
+		
 			endSubdiv(0);
 			break;
-        case 'w':
-          if (disp == DRAW3D)
-          {
-            disp = DRAW2D;
-            resetCamera(); 
-            cleanPolyList();
-            
-            subdiv_v = 0;
-            subdiv_h = 0;
-            
-          }
-          else if(num_i0_pts < 5){
-            //print error message
-            printf("Need more than 5 points to do this \n");
-          }
-          else
-            disp = DRAW3D;
-          break;
+		case 'w' :
+		  if(num_i0_pts < 5){
+        //print error message
+        printf("Need more than 5 points to do this \n");
+      }
+      else
+      {
+        disp = DRAW3D;
+        printf("Draw mode changed to 3D\n");
+      }
+      break;
+    case 'z':
+      if (disp == DRAW3D)
+      {
+        disp = DRAW2D;
+        resetCamera(); 
+        cleanPolyList();
+        
+        subdiv_v = 0;
+        subdiv_h = 0;
+        
+        printf("Draw mode changed to 2D\n");
+        
+      }
+      break;
           
     case 'e':
       if (disp == DRAW3D)
@@ -209,6 +218,11 @@ void myKeyHandler(unsigned char ch, int x, int y) {
         else
           printf("Maximum horizontal subdivisions reached\n");
       }
+      break;
+    
+    case 's':
+      shineMode = !shineMode;
+      printf("Shine value toggled\n");
       break;
       
 		default:
@@ -346,8 +360,9 @@ void myMouseMotion(int x, int y) {
 
 void endSubdiv(int status) {
   printf("\nQuitting subdivision program.\n\n");
+  if (disp == DRAW3D)
+    cleanPolyList();
   fflush(stdout);
-
   exit(status);
 }
 
