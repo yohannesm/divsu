@@ -19,5 +19,6 @@ void cleanPolyList();
 
 extern DISP_MODE disp;
 extern GLfloat*** poly_list;
+extern GLfloat*** vert_normals;
 #define PI 3.14159265
 #endif	/* _DRAWING_H_ */
