@@ -26,8 +26,9 @@ int subdiv_h = 0; // The user-specified subdivision level, horizontal
 int curSubDivV = 0;
 int curSubDivH = 0;
 
-
 int oldNumOfLevels = 0;
+
+bool recomputeNorm = true;
 
 GLfloat magnitVec(GLfloat* v){
  return sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2] );
@@ -39,10 +40,10 @@ GLfloat* normCrossProduct(GLfloat* x, GLfloat* y){
      result[1] = (x[2] * y[0]) - (x[0] * y[2]);
      result[2] = (x[0] * y[1]) - (x[1] * y[0]);
 
-     GLfloat mag = magnitVec(result);
-     result[0] /= mag;
-     result[1] /= mag;
-     result[2] /= mag;
+     //GLfloat mag = magnitVec(result);
+     //result[0] /= mag;
+     //result[1] /= mag;
+     //result[2] /= mag;
 
      return result;
 }
@@ -82,9 +83,83 @@ int calcNumPointsInLevel (int subDivDepth)
   return pow(2, subDivDepth) * 3;
 }
 
+GLfloat* computeGNormal(int level, int point)
+{
+  int numOfLevels = calcNumOfLevels(subdiv_v);
+  int numPointsInLevel = calcNumPointsInLevel(subdiv_h);
+  int l = level;
+  int p = point;
+  //printf("l : %i, p : %i\n", l, p);
+  GLfloat* norm = new GLfloat[3];
+
+  int ppo = (p + 1);
+  int pmo = (p - 1);
+  if (ppo >= numPointsInLevel)
+    ppo -= numPointsInLevel;
+  if (pmo < 0)
+    pmo += numPointsInLevel;
+
+  int lpo = (l + 1);
+  int lmo = (l - 1);
+  if (lpo >= numOfLevels)
+    lpo -= numOfLevels;
+  if (lmo < 0)
+    lmo += numOfLevels;
+    
+  //printf("lmo : %i, lpo : %i\n", lmo, lpo);
+  //printf("pmo : %i, ppo : %i\n", pmo, ppo);
+    
+  if (l == 0)
+  {
+    GLfloat* n2 = compNormal(poly_list[l][p], poly_list[lpo][p], poly_list[l][ppo]);
+    GLfloat* n3 = compNormal(poly_list[l][p], poly_list[l][pmo], poly_list[lpo][p]);
+
+    norm[0] = (n2[0] + n3[0]) / 2;
+    norm[1] = (n2[1] + n3[1]) / 2;
+    norm[2] = (n2[2] + n3[2]) / 2;
+    
+    //drawNormal(poly_list[l][p], norm);
+    
+    delete[] n2;
+    delete[] n3;
+  }
+  else if (l == numOfLevels - 1)
+  {
+    GLfloat* n0 = compNormal(poly_list[l][p], poly_list[l][ppo], poly_list[lmo][p]);
+    GLfloat* n1 = compNormal(poly_list[l][p], poly_list[lmo][p], poly_list[l][pmo]);
+
+    norm[0] = (n0[0] + n1[0]) / 2;
+    norm[1] = (n0[1] + n1[1]) / 2;
+    norm[2] = (n0[2] + n1[2]) / 2;
+    
+    //drawNormal(poly_list[l][p], norm);
+                         
+    delete[] n0;
+    delete[] n1;
+  }
+  else
+  {
+    GLfloat* n0 = compNormal(poly_list[l][p], poly_list[l][ppo], poly_list[lmo][p]);
+    GLfloat* n1 = compNormal(poly_list[l][p], poly_list[lmo][p], poly_list[l][pmo]);
+    GLfloat* n2 = compNormal(poly_list[l][p], poly_list[lpo][p], poly_list[l][ppo]);
+    GLfloat* n3 = compNormal(poly_list[l][p], poly_list[l][pmo], poly_list[lpo][p]);
+    
+    norm[0] = (n0[0] + n1[0] + n2[0] + n3[0]) / 4;
+    norm[1] = (n0[1] + n1[1] + n2[1] + n3[1]) / 4;
+    norm[2] = (n0[2] + n1[2] + n2[2] + n3[2]) / 4;
+    
+    //drawNormal(poly_list[l][p], norm);
+                         
+    delete[] n0;
+    delete[] n1;
+    delete[] n2;
+    delete[] n3;
+  }
+  return norm;
+}
+
 void computeGNormals()
 {
-
   int numOfLevels = calcNumOfLevels(subdiv_v);
   int numPointsInLevel = calcNumPointsInLevel(subdiv_h);
   vert_normals = new GLfloat**[numOfLevels];
@@ -97,91 +172,26 @@ void computeGNormals()
       GLfloat ** normLevels = new GLfloat*[numPointsInLevel];
       for (int p = 0; p < numPointsInLevel; ++p)
       {
-        printf("l : %i, p : %i\n", l, p);
-        GLfloat* norm = new GLfloat[3];
-
-        int ppo = (p + 1);
-        int pmo = (p - 1);
-        if (ppo >= numPointsInLevel)
-          ppo -= numPointsInLevel;
-        if (pmo < 0)
-          pmo += numPointsInLevel;
-
-        int lpo = (l + 1);
-        int lmo = (l - 1);
-        if (lpo >= numOfLevels)
-          lpo -= numOfLevels;
-        if (lmo < 0)
-          lmo += numOfLevels;
-          
-        printf("lmo : %i, lpo : %i\n", lmo, lpo);
-        printf("pmo : %i, ppo : %i\n", pmo, ppo);
-          
-        if (l == 0)
-        {
-          norm[0] = 0.0;
-          norm[1] = 0.0;
-          norm[2] = 0.0;
-          normLevels[p] = norm;
-        }
-        else if (l == numOfLevels - 1)
-        {
-          norm[0] = 0.0;
-          norm[1] = 0.0;
-          norm[2] = 0.0;
-          normLevels[p] = norm;
-        }
-        else
-        {
-          GLfloat* n0 = compNormal(poly_list[l][p], poly_list[l][ppo], poly_list[lmo][p]);
-          GLfloat* n1 = compNormal(poly_list[l][p], poly_list[lmo][p], poly_list[l][pmo]);
-          GLfloat* n2 = compNormal(poly_list[l][p], poly_list[lpo][p], poly_list[l][ppo]);
-          GLfloat* n3 = compNormal(poly_list[l][p], poly_list[l][pmo], poly_list[lpo][p]);
-          
-          //drawNormal(poly_list[l][p], n0);
-          //drawNormal(poly_list[l][p], n1);
-          //drawNormal(poly_list[l][p], n2);
-          //drawNormal(poly_list[l][p], n3);
-          
-
-          norm[0] = (n0[0] + n1[0] + n2[0] + n3[0]) / 4;
-          norm[1] = (n0[1] + n1[1] + n2[1] + n3[1]) / 4;
-          norm[2] = (n0[2] + n1[2] + n2[2] + n3[2]) / 4;
-          
-          //drawNormal(poly_list[l][p], norm);
-          normLevels[p] = norm;
-                               
-          delete[] n0;
-          delete[] n1;
-          delete[] n2;
-          delete[] n3;
-        }
-        //drawNormal(poly_list[l][p], trueN);
-        
-        //glBegin(GL_QUADS);
-        //glVertex3fv(poly_list[l][p]);
-        //glVertex3fv(poly_list[l + 1][p]);
-        //glVertex3fv(poly_list[l + 1][ppo]);
-        //glVertex3fv(poly_list[l][ppo]);
-        //glEnd();
+        normLevels[p] = computeGNormal(l,p);
       }
       vert_normals[l] = normLevels;
     }
-    printf("gent norm nol : %i , npl : %i\n", numOfLevels, numPointsInLevel);
+    //printf("gent norm nol : %i , npl : %i\n", numOfLevels, numPointsInLevel);
 }
 
 /* The parameter list may need to be changed for the functions in this file */
 DISP_MODE disp = DRAW2D;
-void drawShape(bool wire, bool points) 
+void drawShape(bool wire, bool points, bool toggleShine) 
 {
-  
-  // glEnable(GL_NORMALIZE);
+  GLfloat cyan[] = {0.f, .8f, .8f, 1.f};
+  glColor3f(cyan[0],cyan[1],cyan[2]);
+  glEnable(GL_NORMALIZE);
   glShadeModel(GL_SMOOTH);
 
-  GLfloat diffuse0[] = {0.0, 1.0, 0.0, 1.0};
-  GLfloat ambient0[] = {0.0, 1.0, 0.0, 1.0};
-  GLfloat specular0[] = {0.0, 1.0, 0.0, 1.0};
-  GLfloat light0_pos[] = {1.0, 2.0, 4.0, 1.0};
+  GLfloat diffuse0[] = {.5, .5, .5, 1.0};
+  GLfloat ambient0[] = {.5, .5, .5, 1.0};
+  GLfloat specular0[] = {.5, .5, .5, 1.0};
+  GLfloat light0_pos[] = {100.0, 200.0, 300.0, 1.0};
 
   glEnable(GL_LIGHTING);
   glEnable(GL_LIGHT0);
@@ -193,36 +203,41 @@ void drawShape(bool wire, bool points)
   //glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, attenu);
 
   glEnable(GL_COLOR_MATERIAL);
-  GLfloat ambient[] = {0.2, 0.2, 0.2, 1.0};
-  GLfloat diffuse[] = {1.0, 0.8, 0.0, 1.0};
-  GLfloat specular[] = {1.0, 1.0, 1.0, 1.0};
-  GLfloat shine[] = {1.0, 1.0, 1.0, 20.0};
-  glMaterialfv(GL_FRONT, GL_AMBIENT, ambient);
-  glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse);
+  GLfloat ambient[] = {1.0, 1.0, 1.0, 0.0};
+  GLfloat diffuse[] = {1.0, 1.0, 1.0, 0.0};
+  GLfloat specular[] = {0.8, 0.8, 0.8, 1.0};
+  
+  GLfloat shine[1] = {0};//{1.0, 1.0, 1.0, 200.0};
+  if (toggleShine)
+    shine[0] = 10;
+  else
+    shine[0] = 128;
+  
+  glMaterialfv(GL_FRONT, GL_AMBIENT, cyan);
+  glMaterialfv(GL_FRONT, GL_DIFFUSE, cyan);
   glMaterialfv(GL_FRONT, GL_SPECULAR, specular);
   glMaterialfv(GL_FRONT, GL_SHININESS, shine);
 
-
-  glMaterialfv(GL_BACK, GL_AMBIENT, ambient);
-  glMaterialfv(GL_BACK, GL_DIFFUSE, diffuse);
-  glMaterialfv(GL_BACK, GL_SPECULAR, specular);
+  //glMaterialfv(GL_BACK, GL_AMBIENT, ambient);
+  //glMaterialfv(GL_BACK, GL_DIFFUSE, diffuse);
+  //glMaterialfv(GL_BACK, GL_SPECULAR, specular);
   //glMaterialfv(GL_BACK, GL_SHININESS, shine);
 
-  GLfloat emission[] = {0.0, 0.3, 0.3, 1.0};
-  glMaterialfv(GL_FRONT, GL_EMISSION, emission);
+  //GLfloat emission[] = {0.0, 0.3, 0.3, 1.0};
+  //glMaterialfv(GL_FRONT, GL_EMISSION, emission);
 
   int numOfLevels = calcNumOfLevels(subdiv_v);
   int numPointsInLevel = calcNumPointsInLevel(subdiv_h);
   //int totalNumPoints = numOfLevels * numPointsInLevel;
   
-  printf("numOfLevels %i\n", numOfLevels);
-  printf("numPointsInLevel %i\n", numPointsInLevel);
+  //printf("numOfLevels %i\n", numOfLevels);
+  //printf("numPointsInLevel %i\n", numPointsInLevel);
   
   glMatrixMode(GL_MODELVIEW);
   if (points)
   {
     glPointSize(2);
-    glColor3f(0,1,0);
+    glColor3f(cyan[0],cyan[1],cyan[2]);
     glBegin(GL_POINTS);
     for (int l = 0; l < numOfLevels; ++l)
       for (int p = 0; p < numPointsInLevel; ++p)
@@ -234,24 +249,29 @@ void drawShape(bool wire, bool points)
     // draw top tri
     for(int l = 0; l < numOfLevels - 1; ++l)
     {
-    	//glColor3f( (l%3 == 0 ? 1 : 0), (l%3 == 1 ? 1 : 0), (l%3 == 2 ? 1 : 0));
-    	glColor3f(0.0, 0.0, 1.0);
       for (int p = 0; p < numPointsInLevel; ++p)
       {
-        int ppo = (p + 1) % numPointsInLevel;
         
+        int ppo = (p + 1);
+        if (ppo >= numPointsInLevel)
+          ppo -= numPointsInLevel;
+       
+        if (ppo >= numPointsInLevel) 
+          ppo -= numPointsInLevel;
+          
         glBegin(GL_QUADS);
-        glVertex3fv(poly_list[l][p]);
         glNormal3fv(vert_normals[l][p]);
+        glVertex3fv(poly_list[l][p]);
 
-        glVertex3fv(poly_list[l + 1][p]);
         glNormal3fv(vert_normals[l+1][p]);
+        glVertex3fv(poly_list[l + 1][p]);
 
-        glVertex3fv(poly_list[l + 1][ppo]);
         glNormal3fv(vert_normals[l+1][ppo]);
+        glVertex3fv(poly_list[l + 1][ppo]);
 
-        glVertex3fv(poly_list[l][ppo]);
         glNormal3fv(vert_normals[l][ppo]);
+        glVertex3fv(poly_list[l][ppo]);
+
         glEnd();
 
       }
@@ -263,11 +283,13 @@ void drawShape(bool wire, bool points)
     // draw top tri
     for(int l = 0; l < numOfLevels - 1; ++l)
     {
-    	//glColor3f( (l%3 == 0 ? 1 : 0), (l%3 == 1 ? 1 : 0), (l%3 == 2 ? 1 : 0));
-    	glColor3f(0.0, 0.0, 1.0);
       for (int p = 0; p < numPointsInLevel; ++p)
       {
         int ppo = (p + 1) % numPointsInLevel;
+       
+        if (ppo >= numPointsInLevel) 
+          ppo -= numPointsInLevel;
+          
         glBegin(GL_LINES);
         glVertex3fv(poly_list[l][p]);
         glVertex3fv(poly_list[l + 1][p]);
@@ -332,12 +354,12 @@ void subdivideH()
   int numOfLevels = calcNumOfLevels(subdiv_v);
   int numPointsInLevel = calcNumPointsInLevel(curSubDivH + 1);
   //int totalNumPoints = numOfLevels * numPointsInLevel;
-  printf("SUBDIVIDING HORIZONTALLY\n");
-  printf("numPointsInLevel %i\n", numPointsInLevel);
+  //printf("SUBDIVIDING HORIZONTALLY\n");
+  //printf("numPointsInLevel %i\n", numPointsInLevel);
   // sub divide horizontally
   for (int l = 0; l < numOfLevels; ++l)
   {
-    printf("SUBDIVIDING LEVEL %i\n", l);
+    //printf("SUBDIVIDING LEVEL %i\n", l);
     GLfloat** newLevel = new GLfloat*[numPointsInLevel];
     GLfloat** oldLevel = poly_list[l];
     
@@ -362,7 +384,7 @@ void subdivideH()
       } 
       else
       {
-        int oldInd = (p - 1) / 2;
+        int oldInd = (p - 1) >> 1;
         int oldIntpo = (oldInd + 1) % (numPointsInLevel >> 1);
         newP[0] = (4 * oldLevel[oldInd][0] + 4 * oldLevel[oldIntpo][0]) / 8;
         newP[1] = (4 * oldLevel[oldInd][1] + 4 * oldLevel[oldIntpo][1]) / 8;
@@ -387,15 +409,15 @@ void subdivideV()
   int numPointsInLevel = calcNumPointsInLevel(subdiv_h);
   int oldNumOfLevels = calcNumOfLevels(curSubDivV);
   //int totalNumPoints = numOfLevels * numPointsInLevel;
-  printf("SUBDIVIDING VERTICALLY\n");
-  printf("numOfLevels %i\n", numOfLevels);
-  printf("oldNumOfLevels %i\n", oldNumOfLevels);
+  //printf("SUBDIVIDING VERTICALLY\n");
+  //printf("numOfLevels %i\n", numOfLevels);
+  //printf("oldNumOfLevels %i\n", oldNumOfLevels);
   // sub divide VERTICALLY
   GLfloat*** newPolyList = new GLfloat**[numOfLevels]; //new GLfloat[3][numPointsInLevel][numOfLevels];
   
   for (int l = 0; l < numOfLevels; ++l)
   {
-    printf("SUBDIVIDING in LEVEL %i\n", l);
+    //printf("SUBDIVIDING in LEVEL %i\n", l);
     GLfloat** newLevel = new GLfloat*[numPointsInLevel];
     if (l == 0 || l == numOfLevels - 1)
     {
@@ -405,9 +427,13 @@ void subdivideV()
         
       for (int p = 0; p < numPointsInLevel; ++p)
       {
+        //printf("l : %i, p : %i", l, p);
         GLfloat* newP = new GLfloat[3];
         for (int i = 0; i < 3; ++i)
+        {
+          //printf("i: %i\n", i);
           newP[i] = poly_list[oldInd][p][i];
+        }
         newLevel[p] = newP;
       }
     }
@@ -422,13 +448,13 @@ void subdivideV()
       if (oldIntmo < 0)
         oldIntmo += oldNumOfLevels;
         
-      printf("oldInd : %i\n", oldInd);
-      printf("oldIntpo : %i\n", oldIntpo);
-      printf("oldIntmo : %i\n", oldIntmo);
+      //printf("oldInd : %i\n", oldInd);
+      //printf("oldIntpo : %i\n", oldIntpo);
+      //printf("oldIntmo : %i\n", oldIntmo);
       
       for (int p = 0; p < numPointsInLevel; ++p)
       {
-        printf("point %i\n", p);
+        //printf("point %i\n", p);
         GLfloat* newP = new GLfloat[3];
         newP[0] = (poly_list[oldIntmo][p][0] + 6 * poly_list[oldInd][p][0] + poly_list[oldIntpo][p][0]) / 8;
         newP[1] = (poly_list[oldIntmo][p][1] + 6 * poly_list[oldInd][p][1] + poly_list[oldIntpo][p][1]) / 8;
@@ -465,14 +491,16 @@ void subdivideV()
   poly_list = newPolyList;
 }
 
-void draw3D(bool wire, bool points)
+void draw3D(bool wire, bool points, bool toggleShine)
 {
-  printf("curSubDivV : %i and subdiv_v : %i\n", curSubDivV, subdiv_v);
-  printf("curSubDivH : %i and subdiv_h : %i\n", curSubDivH, subdiv_h);  
+  //printf("curSubDivV : %i and subdiv_v : %i\n", curSubDivV, subdiv_v);
+  //printf("curSubDivH : %i and subdiv_h : %i\n", curSubDivH, subdiv_h);  
 
   if (subdiv_v == 0 && subdiv_h == 0){
     // if this is the first time we need to generate the points
     genFirstPoints();
+    computeGNormals();
+    drawShape(wire, points, toggleShine);
   }
   else
   {
@@ -482,6 +510,7 @@ void draw3D(bool wire, bool points)
       // sub divide vertically
       subdivideV();
       ++curSubDivV;
+      recomputeNorm = true;
     }
     if(curSubDivV > subdiv_v)
       printf("ERROR INVALID VALUES curSubDivV is %i and subdiv_v is %i\n", curSubDivV, subdiv_v);
@@ -490,31 +519,30 @@ void draw3D(bool wire, bool points)
     {
       subdivideH();
       ++curSubDivH;
+      recomputeNorm = true;
     }
     if(curSubDivH > subdiv_h)
       printf("ERROR INVALID VALUES curSubDivH is %i and subdiv_h is %i\n", curSubDivH, subdiv_h);
-  }  
-  
-  computeGNormals();
-  drawShape(wire, points);
-  
-  int numOfLevels = calcNumOfLevels(subdiv_v);
-  int numPointsLevels = calcNumPointsInLevel(subdiv_h);
-  
-  printf("nol : %i , npl : %i\n", numOfLevels, numPointsLevels);
-  #if 1
-  for (int l = 0; l < numOfLevels; ++l)
-  {
-    for (int p = 0; p < numPointsLevels; ++p){
-      delete[] vert_normals[l][p];
-      }
       
-    delete[] vert_normals[l];
-  }
-  delete[] vert_normals;
-    #endif
+    if (recomputeNorm)
+    {
+      for (int l = 0; l < sizeof(vert_normals) / sizeof(GLfloat*); ++l)
+      {
+        for (int p = 0; p < sizeof(vert_normals[0]) / sizeof(GLfloat*); ++p){
+          delete[] vert_normals[l][p];
+          }
+          
+        delete[] vert_normals[l];
+      }
+      delete[] vert_normals;
+      computeGNormals();
+      recomputeNorm = false;
+    }
+    drawShape(wire, points, toggleShine);
+  }  
 } // end draw3D
 
+//////////////////////////////////////////////////////////////////////////////////////
 void draw2D ()
 {
     glDisable(GL_LIGHTING);
@@ -555,11 +583,21 @@ void cleanPolyList()
   for (int l = 0; l < calcNumOfLevels(subdiv_v); ++l)
   {
     for (int p = 0; p < calcNumPointsInLevel(subdiv_h); ++p)
+    {
       delete[] poly_list[l][p];
-      
+    }  
     delete[] poly_list[l];
   }
   delete[] poly_list;
+  for (int l = 0; l < sizeof(vert_normals) / sizeof(GLfloat*); ++l)
+  {
+    for (int p = 0; p < sizeof(vert_normals[0]) / sizeof(GLfloat*); ++p){
+      delete[] vert_normals[l][p];
+      }
+      
+    delete[] vert_normals[l];
+  }
+  delete[] vert_normals;
 }
 
 

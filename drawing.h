@@ -10,7 +10,7 @@ enum DISP_MODE{ DRAW2D, DRAW3D };
 void drawSurface(void);
 
 void draw2D ();
-void draw3D (bool,bool);
+void draw3D (bool,bool,bool);
 GLfloat cosLaw(GLfloat, GLfloat, GLfloat);
 int calcNumPointsInLevel (int subDivDepth);
 int calcNumOfLevels(int subDivDepth);
