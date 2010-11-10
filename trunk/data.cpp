@@ -30,7 +30,6 @@ int num_draw_pts;    // The number of control points to draw
 GLfloat *** poly_list;
 
 GLfloat *** vert_normals;
-//std::vector<std::vector<std::vector<GLfloat>>> poly_list;
 
 /**********************************************
  * Begin Routines for Midpoint Subdivsion
