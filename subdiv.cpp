@@ -329,7 +329,7 @@ void myMouseMotion(int x, int y) {
 		  glRotatef(-d_y, 0.0, 0.0, 1.0);	/* z-axis rotation */
 
 	  } 
-  #if 0
+  #if 1
     else if (mouse_mode == MOUSE_ZOOM) {
 		  d_y /= 100.0;
 
@@ -340,16 +340,16 @@ void myMouseMotion(int x, int y) {
 			  zoomFactor = 0.001;
 		  }
 
-		  glMatrixMode(GL_PROJECTION);
-		  glLoadIdentity();
+          glScalef(zoomFactor, zoomFactor, zoomFactor);
+
+	//	  glMatrixMode(GL_PROJECTION);
+	//	  glLoadIdentity();
 
 		  /*
 		   * glFrustum must receive positive values for the near and far
 		   * clip planes ( arguments 5 and 6 ).
 		   */
-		  glFrustum(fleft*zoomFactor, fright*zoomFactor,
-			  fbottom*zoomFactor, ftop*zoomFactor,
-			  -zNear, -zFar);
+	//	  glFrustum(fleft*zoomFactor, fright*zoomFactor		  fbottom*zoomFactor, ftop*zoomFactor,			  -zNear, -zFar);
 	  }
   #endif
 
